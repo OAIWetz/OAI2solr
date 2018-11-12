@@ -1,0 +1,147 @@
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:php="http://php.net/xsl"
+    xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+    xmlns:xlink="http://www.w3.org/2001/XMLSchema-instance">
+    <xsl:output method="xml" indent="yes" encoding="utf-8"/>
+    <xsl:param name="institution">UB Kiel</xsl:param>
+    <xsl:param name="collection">MACAU</xsl:param>
+    <xsl:template match="root">
+        <add>
+            <doc>
+                <!-- ID -->
+                <!-- Important: This relies on an <identifier> tag being injected by the OAI-PMH harvester. -->
+                <field name="id">
+                    <xsl:value-of select="//identifier"/>
+                </field>
+
+                <!-- RECORDTYPE -->
+                <field name="recordtype">ojs</field>
+
+                <!-- FULLRECORD -->
+                <!-- disabled for now; records are so large that they cause memory problems!
+                <field name="fullrecord">
+                    <xsl:copy-of select="php:function('VuFind::xmlAsText', //oai_dc:dc)"/>
+                </field>
+                  -->
+
+                <!-- ALLFIELDS -->
+                <field name="allfields">
+                    <xsl:value-of select="normalize-space(string(//oai_dc:dc))"/>
+                </field>
+
+                <!-- INSTITUTION -->
+                <field name="institution">
+                    <xsl:value-of select="$institution" />
+                </field>
+
+                <!-- COLLECTION -->
+                <field name="collection">
+                    <xsl:value-of select="$collection" />
+                </field>
+
+                <!-- LANGUAGE -->
+                <xsl:if test="//language">
+                    <xsl:for-each select="//language">
+                        <xsl:if test="string-length() > 0">
+                            <field name="language">
+                                <xsl:value-of select="normalize-space()"/>
+                            </field>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:if>
+
+                <!-- FORMAT -->
+                <field name="format">Online</field>
+
+                <!-- AUTHOR -->
+                <xsl:if test="//creator">
+                    <xsl:for-each select="//creator">
+                        <xsl:if test="normalize-space()">
+                            <field name="author">
+                                <xsl:value-of select="normalize-space()"/>
+                            </field>
+                            <!-- use first author value for sorting -->
+                            <xsl:if test="position()=1">
+                                <field name="author_sort">
+                                    <xsl:value-of select="normalize-space()"/>
+                                </field>
+                            </xsl:if>
+                        </xsl:if>
+                    </xsl:for-each>
+                </xsl:if>
+
+                <!-- TITLE -->
+                <xsl:if test="//title[normalize-space()]">
+                    <field name="title">
+                        <xsl:value-of select="//title[normalize-space()]"/>
+                    </field>
+                    <field name="title_short">
+                        <xsl:value-of select="//title[normalize-space()]"/>
+                    </field>
+                    <field name="title_full">
+                        <xsl:value-of select="//title[normalize-space()]"/>
+                    </field>
+                    <field name="title_sort">
+                        <xsl:value-of select="//dc:title[normalize-space()]"/>
+                    </field>
+                </xsl:if>
+                
+                <!-- DESCRIPTION -->
+                <xsl:if test="//description">
+                    <field name="description">
+                        <xsl:value-of select="//description" />
+                    </field>
+                </xsl:if>
+
+                <!-- PUBLISHER -->
+                <xsl:if test="//publisher[normalize-space()]">
+                    <field name="publisher">
+                        <xsl:value-of select="//publisher[normalize-space()]"/>
+                    </field>
+                </xsl:if>
+                
+                <!-- DDC -->
+                <xsl:if test="//subject[starts-with(text(),'ddc')]">
+                    <field name="DDC">
+                        <xsl:value-of select="//subject[normalize-space()]"/>
+                    </field>
+                </xsl:if>
+                
+                   
+                <!-- FACULTY -->         
+                <xsl:if test="subject[contains(text(),'Faculty')]">
+                    <field name="Faculty">
+                        <xsl:value-of select="subject[contains(text(),'Faculty')]/text()"/>
+                    </field>
+                </xsl:if>
+                
+                <!-- DOCTYPE -->         
+                <xsl:if test="type[contains(text(),'doc')]">
+                    <field name="doc_type">
+                        <xsl:value-of select="type[contains(text(),'doc')]/text()"/>
+                    </field>
+                </xsl:if>
+                            
+                <!-- PUBLISHDATE -->
+                <xsl:if test="//date">
+                    <field name="publishDate">
+                        <xsl:value-of select="substring(//date, 1, 4)"/>
+                    </field>
+                    <field name="publishDateSort">
+                        <xsl:value-of select="substring(//date, 1, 4)"/>
+                    </field>
+                </xsl:if>
+
+                <!-- URL -->
+                <xsl:if test="//identifier">
+                    <field name="url">
+                        <xsl:value-of select="//identifier[normalize-space()]"/>
+                    </field>
+                </xsl:if>
+            </doc>
+        </add>
+    </xsl:template>
+</xsl:stylesheet>
+
